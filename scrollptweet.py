@@ -1,11 +1,14 @@
 enable_scrollphat = True
 
 #import
-if enable_scrollphat == True:
+try:
     import scrollphat
+except:
+    enable_scrollphat = False
+
 import sys
 import time
-import thread
+import HTMLParser
 from twython import TwythonStreamer
 
 # Twitter auth keys here
@@ -18,9 +21,10 @@ OAUTH_TOKEN_SECRET = ''
 class MyStreamer(TwythonStreamer):
     def on_success(self, data):
         if 'text' in data:
-            raw_tweet = '     @{}: {}'.format(data['user']['screen_name'].encode('utf-8'), data['text'].encode('utf-8'))
-            tweet = self.remove_link(raw_tweet)
-            print tweet
+            h = HTMLParser.HTMLParser()
+            user = data['user']['screen_name'].encode('utf-8')
+            raw_tweet = h.unescape(data['text'])
+            tweet = self.remove_link('     @{}: {}'.format(user.encode('utf-8'), raw_tweet.encode('utf-8')))
             if enable_scrollphat == True:
                 scrollphat.write_string(tweet.upper())
                 status_length = scrollphat.buffer_len()
@@ -28,6 +32,12 @@ class MyStreamer(TwythonStreamer):
                     scrollphat.scroll()
                     time.sleep(0.1)
                     status_length -= 1
+            else:
+                try:
+                    # i can't figure out how to print things reliably on windows with this crapping itself
+                    print unicode(tweet).encode('ascii')
+                except:
+                    print '     @{}: Could not display tweet'.format(user.encode('utf-8'))
 
     def on_error(self, status_code, data):
         print status_code, data
@@ -56,6 +66,7 @@ class MyStreamer(TwythonStreamer):
 
 
 try:
+    default_encoding = sys.stdout.encoding
     #init
     if enable_scrollphat == True:
         scrollphat.clear()
