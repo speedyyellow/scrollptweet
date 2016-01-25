@@ -1,5 +1,8 @@
+enable_scrollphat = True
+
 #import
-import scrollphat
+if enable_scrollphat == True:
+    import scrollphat
 import sys
 import time
 import thread
@@ -17,12 +20,14 @@ class MyStreamer(TwythonStreamer):
         if 'text' in data:
             raw_tweet = '     @{}: {}'.format(data['user']['screen_name'].encode('utf-8'), data['text'].encode('utf-8'))
             tweet = self.remove_link(raw_tweet)
-            scrollphat.write_string(tweet.upper())
-            status_length = scrollphat.buffer_len()
-            while status_length > 0:
-                scrollphat.scroll()
-                time.sleep(0.1)
-                status_length -= 1
+            print tweet
+            if enable_scrollphat == True:
+                scrollphat.write_string(tweet.upper())
+                status_length = scrollphat.buffer_len()
+                while status_length > 0:
+                    scrollphat.scroll()
+                    time.sleep(0.1)
+                    status_length -= 1
 
     def on_error(self, status_code, data):
         print status_code, data
@@ -44,7 +49,7 @@ class MyStreamer(TwythonStreamer):
                 result = input_string[0:http_start]
 
             # we've removed the first link, recurse to see if there are any others
-            return self.remove_link(result).strip(" ")
+            return self.remove_link(result)
 
         else:
             return input_string
@@ -52,13 +57,15 @@ class MyStreamer(TwythonStreamer):
 
 try:
     #init
-    scrollphat.clear()
-    scrollphat.rotate = True
-    scrollphat.set_brightness(2)
+    if enable_scrollphat == True:
+        scrollphat.clear()
+        scrollphat.rotate = True
+        scrollphat.set_brightness(2)
 
     stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     stream.user()
 
 except KeyboardInterrupt:
-    scrollphat.clear()
+    if enable_scrollphat == True:
+        scrollphat.clear()
     sys.exit(-1)
