@@ -32,6 +32,7 @@ class MyStreamer(TwythonStreamer):
                     scrollphat.scroll()
                     time.sleep(0.1)
                     status_length -= 1
+                scrollphat.clear()
             else:
                 try:
                     # i can't figure out how to print things reliably on windows with this crapping itself
